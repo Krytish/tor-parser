@@ -24,23 +24,19 @@ def save_html(html_content, filename):
     with open(filename, 'w', encoding='utf-8') as file:
         file.write(html_content)
 
-# Функция для поиска определенных шаблонов в тексте (например, email адресов)
 def find_patterns(text, pattern):
     return re.findall(pattern, text)
 
-# Функция для анализа форм на странице
 def analyze_forms(html_content):
     soup = BeautifulSoup(html_content, 'lxml')
     forms = soup.find_all('form')
     return [str(form) for form in forms]
 
-# Функция для получения всех изображений со страницы
 def get_images(html_content):
     soup = BeautifulSoup(html_content, 'lxml')
     images = [img['src'] for img in soup.find_all('img', src=True)]
     return images
 
-# Функция для анализа заголовков на странице
 def analyze_headers(html_content):
     soup = BeautifulSoup(html_content, 'lxml')
     headers = {}
@@ -48,7 +44,6 @@ def analyze_headers(html_content):
         headers[f'h{i}'] = [header.text for header in soup.find_all(f'h{i}')]
     return headers
 
-# Функция для поиска всех внешних ссылок на странице
 def find_external_links(html_content, base_url):
     soup = BeautifulSoup(html_content, 'lxml')
     links = set()
@@ -76,11 +71,9 @@ def extract_tables(html_content):
     soup = BeautifulSoup(html_content, 'lxml')
     return [str(table) for table in soup.find_all('table')]
 
-# Функция для сравнения содержимого двух страниц
 def compare_pages(content1, content2):
     return content1 == content2
 
-# Функция для подсчета количества слов на странице
 def count_words(text):
     return len(text.split())
 
@@ -94,7 +87,7 @@ async def async_is_link_active(session, url, retries=3):
                 return response.status == 200
         except (aiohttp.ClientError, asyncio.TimeoutError, python_socks.ProxyError) as e:
             if attempt < retries - 1:
-                await asyncio.sleep(2 ** attempt)  # Экспоненциальная задержка
+                await asyncio.sleep(2 ** attempt)
             else:
                 print(f"Error accessing {url}: {e}")
     return False
@@ -111,7 +104,6 @@ async def async_parse_onion_page(session, url):
     except aiohttp.ClientError as e:
         return f"Error: {e}", '', []
 
-# Асинхронная функция для проверки активности ссылки
 async def async_is_link_active(session, url, retries=3):
     for attempt in range(retries):
         try:
@@ -133,10 +125,10 @@ def get_random_user_agent():
 async def async_main():
     tor_executable_path = 'tor/tor.exe'
     start_tor(tor_executable_path)
-    time.sleep(10)  # Пауза для запуска Tor
+    time.sleep(15) 
     clear_console()
 
-    onion_url = input("Добро пожаловать в парсер Tor сайтов!\nВведите .onion URL: ")
+    onion_url = input("Добро пожаловать в парсер Tor сайтов by t.me/Vortex_Join!\nВведите .onion URL: ")
 
     headers = {'User-Agent': get_random_user_agent()}
     connector = ProxyConnector.from_url('socks5://127.0.0.1:9050')
@@ -144,38 +136,31 @@ async def async_main():
         title, html_content, links = await async_parse_onion_page(session, onion_url)
         print(f"Title: {title}")
 
-        # Сохранение HTML-контента
         save_html(html_content, 'main_page.html')
 
-        # Сохранение извлеченного текста
         text = extract_text(html_content)
         with open('parsed/extracted_text.txt', 'w', encoding='utf-8') as file:
             file.write(text)
 
-        # Сохранение списка изображений
         images = get_images(html_content)
         with open('parsed/images_list.txt', 'w', encoding='utf-8') as file:
             for img in images:
                 file.write(img + '\n')
 
-        # Сохранение заголовков
         headers = analyze_headers(html_content)
         with open('parsed/headers.json', 'w', encoding='utf-8') as file:
             json.dump(headers, file, ensure_ascii=False, indent=4)
 
-        # Сохранение внешних ссылок
         external_links = find_external_links(html_content, onion_url)
         with open('parsed/external_links.txt', 'w', encoding='utf-8') as file:
             for link in external_links:
                 file.write(link + '\n')
 
-        # Сохранение скриптов
         scripts = find_scripts(html_content)
         with open('parsed/scripts.txt', 'w', encoding='utf-8') as file:
             for script in scripts:
                 file.write(script + '\n')
 
-        # Сохранение метатегов
         meta_tags = extract_meta_tags(html_content)
         with open('parsed/meta_tags.json', 'w', encoding='utf-8') as file:
             json.dump(meta_tags, file, ensure_ascii=False, indent=4)
@@ -192,7 +177,7 @@ async def async_main():
                 active_link = await async_is_link_active(session, link)
                 if active_link:
                     file.write(link + '\n')
-                await asyncio.sleep(random.randint(1, 5))  # Задержка от 1 до 5 секунд
+                await asyncio.sleep(random.randint(1, 5))
 
 if __name__ == "__main__":
     asyncio.run(async_main())
